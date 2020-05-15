@@ -1,32 +1,26 @@
-#!/usr/bin/sh
+#!/bin/sh
 
 BRANCH=`git rev-parse --abbrev-ref HEAD`
 exec < /dev/tty
 
-if [[ "$BRANCH" != "production" || "$BRANCH" != "staging" ]]; then
+echo $?;
+if [ "$BRANCH" == "production"} ] || [ "$BRANCH" == "staging" ]; then
   exit 1
 fi
 
-while true; do
-  read -p "[pre-commit hook] Want to run tests? (Y/n) " yn
-  if [ "$yn" = "" ]; then
-    yn='Y'
-  fi
-  case $yn in
-      [Yy] ) break;;
-      [Nn] ) exit 2;;
-      * ) echo "Please answer y or n for yes or no.";;
-  esac
-done
+echo
+echo "[pre-commit-hook] Executing tests before Comitting."
+echo "If you want to change the vars please do so in .git/hooks/pre-commit"
+echo
 
-echo "Path to homestead box ~/path/to/homestead "
+echo "Path to homestead box ~/path/to/homestead"
 read HOMESTEAD_PATH
 
-echo "Path to application within vagrant ~/applicationName"
+echo "Path to application within vagrant: applicationName"
 read APPLICATION_NAME
 
-echo "Please enter the name of your homestead box. Check Homestead.yaml."
+echo "Please enter the name of your homestead box. Check Homestead.yaml"
 read BOX_NAME
 
-cd $HOMESTEAD_PATH && vagrant ssh $BOX_NAME -c "cd $APPLICATION_NAME && vendor/bin/phpunit --configuration=tests/phpunit.xml"
+exec vagrant ssh $BOX_NAME -c "cd $APPLICATION_NAME && vendor/bin/phpunit --configuration=tests/phpunit.xml"
 exit 0
