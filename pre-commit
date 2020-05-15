@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+$branch = exec('git rev-parse --abbrev-ref HEAD');
+
+if ($branch !== 'staging' || $branch !== 'production' ) {
+  exit(0);
+}
+
+$homesteadPath = '~/Documents/Homestead';
+$vagrantBoxPath = '~/makemedo';
+
+// Rum tests on vagrant envirement
+echo 'Running tests.. ';
+exec("cd {$homesteadPath} && vagrant ssh dev-environment -c 'cd {$vagrantBoxPath} && vendor/bin/phpunit --configuration=tests/phpunit.xml'", $output, $returnCode);
+
+if ($returnCode !== 0) {
+  // Show full output
+  echo PHP_EOL . implode($output, PHP_EOL) . PHP_EOL;
+  echo 'Aborting commit..' . PHP_EOL;
+  exit(1);
+}
+
+// Show summary (last line)
+echo array_pop($output) . PHP_EOL;
+
+exit(0);
