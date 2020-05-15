@@ -1,27 +1,32 @@
-#!/usr/bin/env php
-<?php
+#!/usr/bin/sh
 
-$branch = exec('git rev-parse --abbrev-ref HEAD');
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+exec < /dev/tty
 
-if ($branch !== 'staging' || $branch !== 'production' ) {
-  exit(0);
-}
+if [[ "$BRANCH" != "production" || "$BRANCH" != "staging" ]]; then
+  exit 1
+fi
 
-$homesteadPath = '~/Documents/Homestead';
-$vagrantBoxPath = '~/makemedo';
+while true; do
+  read -p "[pre-commit hook] Want to run tests? (Y/n) " yn
+  if [ "$yn" = "" ]; then
+    yn='Y'
+  fi
+  case $yn in
+      [Yy] ) break;;
+      [Nn] ) exit 2;;
+      * ) echo "Please answer y or n for yes or no.";;
+  esac
+done
 
-// Rum tests on vagrant envirement
-echo 'Running tests.. ';
-exec("cd {$homesteadPath} && vagrant ssh dev-environment -c 'cd {$vagrantBoxPath} && vendor/bin/phpunit --configuration=tests/phpunit.xml'", $output, $returnCode);
+echo "Path to homestead box ~/path/to/homestead "
+read HOMESTEAD_PATH
 
-if ($returnCode !== 0) {
-  // Show full output
-  echo PHP_EOL . implode($output, PHP_EOL) . PHP_EOL;
-  echo 'Aborting commit..' . PHP_EOL;
-  exit(1);
-}
+echo "Path to application within vagrant ~/applicationName"
+read APPLICATION_NAME
 
-// Show summary (last line)
-echo array_pop($output) . PHP_EOL;
+echo "Please enter the name of your homestead box. Check Homestead.yaml."
+read BOX_NAME
 
-exit(0);
+cd $HOMESTEAD_PATH && vagrant ssh $BOX_NAME -c "cd $APPLICATION_NAME && vendor/bin/phpunit --configuration=tests/phpunit.xml"
+exit 0
