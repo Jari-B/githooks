@@ -22,5 +22,9 @@ read APPLICATION_NAME
 echo "Please enter the name of your homestead box. Check Homestead.yaml"
 read BOX_NAME
 
+if [ "$BRANCH" == "production"} ] || [ "$BRANCH" == "staging" ]; then
+  exit 1
+fi
+
 exec vagrant ssh $BOX_NAME -c "cd $APPLICATION_NAME && vendor/bin/phpunit --configuration=tests/phpunit.xml"
 exit 0
